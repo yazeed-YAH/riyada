@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id          String   @id
+  email       String   @unique
+  password    String
+  name        String?
+  role        String   @default("admin")
+  permissions String?  @default("{\"events\":true,\"members\":true,\"registrations\":true,\"sponsors\":true,\"settings\":false,\"export\":false}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
+
+model Event {
+  id                        String              @id
+  title                     String
+  description               String?
+  date                      DateTime
+  startTime                 String?
+  endTime                   String?
+  location                  String?
+  imageUrl                  String?
+  status                    String              @default("open")
+  eventType                 String              @default("public")
+  isPublished               Boolean             @default(false)
+  registrationDeadline      DateTime?
+  guestName                 String?
+  guestImage                String?
+  guestOrganization         String?
+  guestPosition             String?
+  guestTwitter              String?
+  guestInstagram            String?
+  guestLinkedIn             String?
+  guestSnapchat             String?
+  capacity                  Int                 @default(50)
+  maxCompanions             Int                 @default(0)
+  registrationType          String              @default("registration")
+  sendQR                    Boolean             @default(false)
+  showCountdown             Boolean             @default(true)
+  showRegistrantCount       Boolean             @default(true)
+  showGuestProfile          Boolean             @default(true)
+  showHospitalityPreference Boolean             @default(true)
+  valetServiceEnabled       Boolean             @default(false)
+  parkingCapacity           Int?
+  carRetrievalTime          String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime
+  EventRegistration         EventRegistration[]
+  EventSponsor              EventSponsor[]
+  SponsorRequest            SponsorRequest[]
+  Notification              Notification[]
+}
+
+model EventRegistration {
+  id                 String   @id
+  eventId            String
+  memberId           String?
+  name               String
+  email              String
+  phone              String?
+  companyName        String?
+  jobTitle           String?
+  interests          String?
+  expectations       String?
+  status             String   @default("pending")
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime
+  gender             String?  @default("female")
+  imageUrl           String?
+  registrationSource String?  @default("manual")
+  Member             Member?  @relation(fields: [memberId], references: [id])
+  Event              Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model EventSponsor {
+  id             String         @id
+  eventId        String
+  sponsorId      String
+  tasks          String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  SponsorRequest SponsorRequest @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  Event          Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Member {
+  id                String              @id
+  name              String
+  email             String              @unique
+  phone             String?
+  password          String?
+  companyName       String?
+  jobTitle          String?
+  businessType      String?
+  interests         String?
+  gender            String?             @default("female")
+  imageUrl          String?
+  twitter           String?
+  instagram         String?
+  linkedin          String?
+  snapchat          String?
+  wantsSponsorship  Boolean             @default(false)
+  sponsorshipTypes  String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  EventRegistration EventRegistration[]
+}
+
+model SiteSettings {
+  id          String   @id
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime
+}
+
+model SponsorNote {
+  id             String         @id
+  sponsorId      String
+  content        String
+  authorName     String
+  createdAt      DateTime       @default(now())
+  SponsorRequest SponsorRequest @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+}
+
+model SponsorRequest {
+  id              String         @id
+  eventId         String?
+  companyName     String
+  contactName     String
+  email           String
+  phone           String
+  sponsorshipType String
+  sponsorType     String?
+  description     String?
+  amount          Float?
+  logoUrl         String?
+  instagram       String?
+  twitter         String?
+  snapchat        String?
+  tiktok          String?
+  linkedin        String?
+  websiteUrl      String?
+  profileUrl      String?
+  socialLinks     String?
+  status          String         @default("new")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  EventSponsor    EventSponsor[]
+  SponsorNote     SponsorNote[]
+  Event           Event?         @relation(fields: [eventId], references: [id])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  message     String
+  eventId     String?
+  isRead      Boolean  @default(false)
+  isDismissed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Event       Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
