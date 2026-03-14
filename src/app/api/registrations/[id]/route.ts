@@ -10,7 +10,7 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await request.json()
-    const { status, notes, name, email, phone, companyName, jobTitle, gender, imageUrl, sendEmail } = body
+    const { status, notes, name, email, phone, companyName, jobTitle, gender, imageUrl, sendEmail, memberId } = body
 
     // بناء كائن البيانات للتحديث
     const updateData: {
@@ -23,6 +23,7 @@ export async function PATCH(
       jobTitle?: string | null
       gender?: string | null
       imageUrl?: string | null
+      memberId?: string | null
     } = {}
 
     if (status !== undefined) updateData.status = status
@@ -39,6 +40,7 @@ export async function PATCH(
     if (jobTitle !== undefined) updateData.jobTitle = jobTitle || null
     if (gender !== undefined) updateData.gender = gender || null
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl || null
+    if (memberId !== undefined) updateData.memberId = memberId
 
     const registration = await db.eventRegistration.update({
       where: { id },
